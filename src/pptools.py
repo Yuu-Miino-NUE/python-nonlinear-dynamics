@@ -59,7 +59,7 @@ def pp(ode_func, tend, y0, params, tstart=0, tick=1e-2, **kwargs):
                 alpha=cfg.alpha,
             )
 
-        (map_data,) = plt.plot(
+        plt.plot(
             sol.y[cfg.xkey, -1],
             sol.y[cfg.ykey, -1],
             "o",
