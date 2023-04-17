@@ -55,9 +55,8 @@ while cfg.isRunning:
     # Erase old trajectories
     current_axes = plt.gca()
     number_of_plots = len(current_axes.lines)
-    max_plots = 64
-    if number_of_plots > max_plots:
-        for line in current_axes.lines[:-max_plots]:
+    if number_of_plots > cfg.max_plots:
+        for line in current_axes.lines[: -cfg.max_plots]:
             line.remove()
 
     # Event handling

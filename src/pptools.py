@@ -25,7 +25,6 @@ class MatplotConfig:
 
 
 def init_plot(y0, params, **kwargs):
-    print(id(y0))
     from matplotlib import pyplot as plt
 
     cfg = MatplotConfig(**kwargs)
