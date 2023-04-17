@@ -23,7 +23,7 @@ class MatplotConfig:
         self.isRunning = True
 
 
-def pp(ode_fun, tend, y0, params, tstart=0, tick=1e-2, **kwargs):
+def pp(ode_func, tend, y0, params, tstart=0, tick=1e-2, **kwargs):
     from matplotlib import pyplot as plt
     from numpy import arange
     from scipy.integrate import solve_ivp
@@ -46,7 +46,7 @@ def pp(ode_fun, tend, y0, params, tstart=0, tick=1e-2, **kwargs):
     tspan = arange(tstart, tend, tick)
     while cfg.isRunning:
         sol = solve_ivp(
-            ode_fun, (tstart, tend), y0, t_eval=tspan, rtol=1e-5, args=[params]
+            ode_func, (tstart, tend), y0, t_eval=tspan, rtol=1e-5, args=[params]
         )
 
         if not cfg.only_map:
