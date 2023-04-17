@@ -9,7 +9,7 @@ import json, sys
 from numpy import arange
 from scipy.integrate import solve_ivp
 
-from pptools import init_plot
+from pptools import init_plot, draw_traj, erase_old_traj
 from nonlinear_systems import duffing, duffing_config, duffing_period
 
 # ODE solver initialization
@@ -30,34 +30,13 @@ while cfg.isRunning:
     sol = solve_ivp(duffing, (tstart, tend), y0, t_eval=tspan, rtol=1e-5, args=[params])
 
     # Draw calculated result
-    if not cfg.only_map:
-        plt.plot(
-            sol.y[cfg.xkey, :],
-            sol.y[cfg.ykey, :],
-            linewidth=cfg.linewidth,
-            color=cfg.traj_color,
-            ls="-",
-            alpha=cfg.alpha,
-        )
-
-    plt.plot(
-        sol.y[cfg.xkey, -1],
-        sol.y[cfg.ykey, -1],
-        "o",
-        markersize=cfg.pointsize,
-        color=cfg.point_color,
-        alpha=cfg.alpha,
-    )
+    draw_traj(plt, cfg, sol.y)
 
     # Post process
     y0[:] = sol.y[:, -1]  # Not y0 = sol.y[:, -1], strictly
 
     # Erase old trajectories
-    current_axes = plt.gca()
-    number_of_plots = len(current_axes.lines)
-    if number_of_plots > cfg.max_plots:
-        for line in current_axes.lines[: -cfg.max_plots]:
-            line.remove()
+    erase_old_traj(plt, cfg)
 
     # Event handling
     plt.pause(0.001)  # REQIRED

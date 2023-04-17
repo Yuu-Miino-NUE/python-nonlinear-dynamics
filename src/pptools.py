@@ -42,6 +42,35 @@ def init_plot(y0, params, **kwargs):
     return (plt, cfg)
 
 
+def draw_traj(plt, cfg, soly):
+    if not cfg.only_map:
+        plt.plot(
+            soly[cfg.xkey, :],
+            soly[cfg.ykey, :],
+            linewidth=cfg.linewidth,
+            color=cfg.traj_color,
+            ls="-",
+            alpha=cfg.alpha,
+        )
+
+    plt.plot(
+        soly[cfg.xkey, -1],
+        soly[cfg.ykey, -1],
+        "o",
+        markersize=cfg.pointsize,
+        color=cfg.point_color,
+        alpha=cfg.alpha,
+    )
+
+
+def erase_old_traj(plt, cfg):
+    current_axes = plt.gca()
+    number_of_plots = len(current_axes.lines)
+    if number_of_plots > cfg.max_plots:
+        for line in current_axes.lines[: -cfg.max_plots]:
+            line.remove()
+
+
 def draw_axes(plt, config):
     plt.xlim(config.xrange)
     plt.ylim(config.yrange)
