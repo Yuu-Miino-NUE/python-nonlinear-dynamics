@@ -1,4 +1,4 @@
-from sympy import cos
+from sympy import cos, pi
 
 
 def duffing(t, state, params):
@@ -11,3 +11,4 @@ def duffing(t, state, params):
 
 
 duffing_config = {"param_keys": ["B", "B0"], "xrange": (-2, 2), "yrange": (-2, 2)}
+duffing_period = 2 * pi
