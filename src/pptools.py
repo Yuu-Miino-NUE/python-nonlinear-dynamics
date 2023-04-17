@@ -15,6 +15,7 @@ class MatplotConfig:
     param_keys = []  # For parameter control
     param_idx = 0  # For parameter control
     param_step = 1e-2  # For parameter control
+    max_plots = 64
 
     def __init__(self, **kwargs):
         for k in kwargs:
@@ -23,7 +24,7 @@ class MatplotConfig:
         self.isRunning = True
 
 
-def pp(ode_func, tend, y0, params, tstart=0, tick=1e-2, **kwargs):
+def pp(ode_func, y0, params, tstart=0, tend=None, tick=1e-2, **kwargs):
     from matplotlib import pyplot as plt
     from numpy import arange
     from scipy.integrate import solve_ivp
@@ -40,6 +41,11 @@ def pp(ode_func, tend, y0, params, tstart=0, tick=1e-2, **kwargs):
         "key_press_event", lambda event: on_key_pressed(event, plt, cfg, params)
     )
     plt.connect("button_press_event", lambda event: on_click(event, plt, cfg, y0))
+
+    draw_map = True
+    if tend == None:
+        tend = 10
+        draw_map = False
 
     # Draw trajectory
     draw_axes(plt, cfg)
@@ -59,18 +65,19 @@ def pp(ode_func, tend, y0, params, tstart=0, tick=1e-2, **kwargs):
                 alpha=cfg.alpha,
             )
 
-        (map_data,) = plt.plot(
-            sol.y[cfg.xkey, -1],
-            sol.y[cfg.ykey, -1],
-            "o",
-            markersize=cfg.pointsize,
-            color=cfg.point_color,
-            alpha=cfg.alpha,
-        )
+        if draw_map:
+            (map_data,) = plt.plot(
+                sol.y[cfg.xkey, -1],
+                sol.y[cfg.ykey, -1],
+                "o",
+                markersize=cfg.pointsize,
+                color=cfg.point_color,
+                alpha=cfg.alpha,
+            )
 
         current_axes = plt.gca()
         number_of_plots = len(current_axes.lines)
-        max_plots = 64
+        max_plots = cfg.max_plots
         if number_of_plots > max_plots:
             for line in current_axes.lines[:-max_plots]:
                 line.remove()
