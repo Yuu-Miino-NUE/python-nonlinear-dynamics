@@ -70,6 +70,13 @@ def pp(ode_func, tend, y0, params, tstart=0, tick=1e-2, **kwargs):
 
         y0 = sol.y[:, -1]
 
+        current_axes = plt.gca()
+        number_of_plots = len(current_axes.lines)
+        max_plots = 64
+        if number_of_plots > max_plots:
+            for line in current_axes.lines[:-max_plots]:
+                line.remove()
+
         plt.pause(0.001)  # REQIRED
 
 
