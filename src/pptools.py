@@ -66,7 +66,7 @@ def pp(ode_func, y0, params, tstart=0, tend=None, tick=1e-2, **kwargs):
             )
 
         if draw_map:
-            (map_data,) = plt.plot(
+            plt.plot(
                 sol.y[cfg.xkey, -1],
                 sol.y[cfg.ykey, -1],
                 "o",
@@ -75,14 +75,14 @@ def pp(ode_func, y0, params, tstart=0, tend=None, tick=1e-2, **kwargs):
                 alpha=cfg.alpha,
             )
 
+        y0 = sol.y[:, -1]
+
         current_axes = plt.gca()
         number_of_plots = len(current_axes.lines)
-        max_plots = cfg.max_plots
+        max_plots = 64
         if number_of_plots > max_plots:
             for line in current_axes.lines[:-max_plots]:
                 line.remove()
-
-        y0 = sol.y[:, -1]
 
         plt.pause(0.001)  # REQIRED
 
