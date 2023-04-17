@@ -15,6 +15,7 @@ class MatplotConfig:
     param_keys = []  # For parameter control
     param_idx = 0  # For parameter control
     param_step = 1e-2  # For parameter control
+    max_plots = 64
 
     def __init__(self, **kwargs):
         for k in kwargs:
@@ -23,15 +24,11 @@ class MatplotConfig:
         self.isRunning = True
 
 
-def pp(ode_func, tend, y0, params, tstart=0, tick=1e-2, **kwargs):
+def init_plot(y0, params, **kwargs):
     from matplotlib import pyplot as plt
-    from numpy import arange
-    from scipy.integrate import solve_ivp
 
-    # Matplotlib configuration
     cfg = MatplotConfig(**kwargs)
 
-    # Initialization
     plt.figure(figsize=cfg.figsize)
 
     plt.rcParams["keymap.fullscreen"].remove("f")
@@ -40,44 +37,38 @@ def pp(ode_func, tend, y0, params, tstart=0, tick=1e-2, **kwargs):
         "key_press_event", lambda event: on_key_pressed(event, plt, cfg, params)
     )
     plt.connect("button_press_event", lambda event: on_click(event, plt, cfg, y0))
-
-    # Draw trajectory
     draw_axes(plt, cfg)
-    tspan = arange(tstart, tend, tick)
-    while cfg.isRunning:
-        sol = solve_ivp(
-            ode_func, (tstart, tend), y0, t_eval=tspan, rtol=1e-5, args=[params]
-        )
 
-        if not cfg.only_map:
-            plt.plot(
-                sol.y[cfg.xkey, :],
-                sol.y[cfg.ykey, :],
-                linewidth=cfg.linewidth,
-                color=cfg.traj_color,
-                ls="-",
-                alpha=cfg.alpha,
-            )
+    return (plt, cfg)
 
+
+def draw_traj(plt, cfg, soly):
+    if not cfg.only_map:
         plt.plot(
-            sol.y[cfg.xkey, -1],
-            sol.y[cfg.ykey, -1],
-            "o",
-            markersize=cfg.pointsize,
-            color=cfg.point_color,
+            soly[cfg.xkey, :],
+            soly[cfg.ykey, :],
+            linewidth=cfg.linewidth,
+            color=cfg.traj_color,
+            ls="-",
             alpha=cfg.alpha,
         )
 
-        y0 = sol.y[:, -1]
+    plt.plot(
+        soly[cfg.xkey, -1],
+        soly[cfg.ykey, -1],
+        "o",
+        markersize=cfg.pointsize,
+        color=cfg.point_color,
+        alpha=cfg.alpha,
+    )
 
-        current_axes = plt.gca()
-        number_of_plots = len(current_axes.lines)
-        max_plots = 64
-        if number_of_plots > max_plots:
-            for line in current_axes.lines[:-max_plots]:
-                line.remove()
 
-        plt.pause(0.001)  # REQIRED
+def erase_old_traj(plt, cfg):
+    current_axes = plt.gca()
+    number_of_plots = len(current_axes.lines)
+    if number_of_plots > cfg.max_plots:
+        for line in current_axes.lines[: -cfg.max_plots]:
+            line.remove()
 
 
 def draw_axes(plt, config):
