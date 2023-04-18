@@ -9,7 +9,7 @@ import json, sys
 from numpy import arange
 from scipy.integrate import solve_ivp
 
-from pptools import init_plot, draw_traj, erase_old_traj
+from pptools import init_plot, draw_traj
 from nonlinear_systems import duffing, duffing_config, duffing_period
 
 # ODE solver initialization
@@ -34,9 +34,6 @@ while cfg.isRunning:
 
     # Post process
     y0[:] = sol.y[:, -1]  # Not y0 = sol.y[:, -1], strictly
-
-    # Erase old trajectories
-    erase_old_traj(plt, cfg)
 
     # Event handling
     plt.pause(0.001)  # REQIRED

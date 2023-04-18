@@ -62,6 +62,8 @@ def draw_traj(plt, cfg, soly):
         alpha=cfg.alpha,
     )
 
+    erase_old_traj(plt, cfg)
+
 
 def erase_old_traj(plt, cfg):
     current_axes = plt.gca()
