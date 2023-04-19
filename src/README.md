@@ -1,7 +1,7 @@
 # How to use?
 
 ```bash
-python pp.py 01.json
+python pp.py json/01.json
 ```
 
 # Directory structure
