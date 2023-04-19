@@ -8,9 +8,10 @@ with open(sys.argv[1]) as f:
 y0 = data["y0"]
 params = data["params"]
 system = data["system"]
+config = {} if "config" not in data else data["config"]
 
 # Matplotlib initialization
-plt, cfg = init_plot(y0, params, **get_config(system))
+plt, cfg = init_plot(y0, params, **(get_config(system) | config))
 
 # Draw trajectory
 while cfg.isRunning:
