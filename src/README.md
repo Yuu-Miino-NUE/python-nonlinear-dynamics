@@ -9,8 +9,10 @@ python pp.py 01.json
 ```bash
 # tree
 .
-├── 01.json
-├── 02.json
+├── README.md
+├── json
+│   ├── 01.json
+│   └── 02.json
 ├── ode_collection.py
 ├── pp.py
 └── pptools.py
