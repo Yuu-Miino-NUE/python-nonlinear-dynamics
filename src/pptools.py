@@ -42,6 +42,33 @@ def init_plot(y0, params, **kwargs):
     return (plt, cfg)
 
 
+def get_config(func_name):
+    from ode_collection import ode_lambda
+
+    return ode_lambda(func_name).config
+
+
+def calc_traj(func_name, y0, tspan=None, tick=1e-2, args=[]):
+    from scipy.integrate import solve_ivp
+    from ode_collection import ode_lambda
+    from numpy import arange
+
+    ode_func = ode_lambda(func_name)
+
+    if tspan is None:
+        if hasattr(ode_func, "period"):
+            tspan = (0, ode_func.period)
+        else:
+            tspan = (0, 5)
+
+    t_eval = arange(tspan[0], tspan[1], tick)
+
+    sol = solve_ivp(
+        ode_lambda(func_name), tspan, y0, t_eval=t_eval, rtol=1e-5, args=args
+    )
+    return sol
+
+
 def draw_traj(plt, cfg, soly):
     if not cfg.only_map:
         plt.plot(
@@ -94,7 +121,7 @@ def on_key_pressed(event, plt, config, params):
             config.param_idx = (config.param_idx + 1) % len(config.param_keys)
             print(f"changable parameter: {config.param_keys[config.param_idx]}")
         case "up" | "down":  # For parameter control
-            step = config.param_step * (-1 if event.key == "up" else 1)
+            step = config.param_step * (-1 if event.key == "down" else 1)
             params[config.param_keys[config.param_idx]] = round(
                 params[config.param_keys[config.param_idx]] + step, 10
             )
