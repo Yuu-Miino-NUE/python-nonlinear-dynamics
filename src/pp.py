@@ -1,10 +1,3 @@
-"""
-How to use?
-
-```
-python pp.py 01.json
-```
-"""
 import json, sys
 from pptools import get_config, init_plot, calc_traj, draw_traj
 
