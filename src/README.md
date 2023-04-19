@@ -1,12 +1,12 @@
 # How to use?
 
-```bash
+```shell
 python -m pp duffing/01.json
 ```
 
 # Directory structure
 
-```bash
+```shell
 # tree
 .
 ├── duffing
