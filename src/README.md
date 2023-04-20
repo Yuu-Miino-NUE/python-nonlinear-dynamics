@@ -11,8 +11,10 @@ python pp.py json/01.json
 .
 ├── README.md
 ├── json
-│   ├── 01.json
-│   └── 02.json
+│   ├── duffing
+│   │   └── 01.json
+│   └── forced_van_der_pol
+│       └── 01.json
 ├── ode_collection.py
 ├── pp.py
 └── pptools.py
