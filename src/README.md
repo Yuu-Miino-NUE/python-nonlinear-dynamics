@@ -1,7 +1,7 @@
 # How to use?
 
 ```bash
-python pp.py json/01.json
+python pp.py json/duffing/01.json
 ```
 
 # Directory structure
@@ -12,7 +12,9 @@ python pp.py json/01.json
 ├── README.md
 ├── json
 │   ├── duffing
-│   │   └── 01.json
+│   │   ├── 01.json
+│   │   └── tangent
+│   │       └── 02.json
 │   └── forced_van_der_pol
 │       └── 01.json
 ├── ode_collection.py
