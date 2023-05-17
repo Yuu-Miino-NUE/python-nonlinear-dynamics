@@ -39,7 +39,7 @@ def init_plot(y0, params, **kwargs):
     plt.rcParams["keymap.fullscreen"].remove("f")
     plt.rcParams["keymap.quit"].remove("q")
     plt.connect(
-        "key_press_event", lambda event: on_key_pressed(event, plt, cfg, params)
+        "key_press_event", lambda event: on_key_pressed(event, plt, ax, cfg, params)
     )
     plt.connect("button_press_event", lambda event: on_click(event, plt, cfg, y0))
     draw_axes(plt, ax, cfg)
@@ -80,30 +80,30 @@ def erase_old_traj(plt, cfg):
             line.remove()
 
 
-def draw_axes(plt, ax, cfg):
+def draw_axes(plt, ax, config):
     import numpy as np
 
     axis_range = (
         np.array(
             [
-                cfg.xrange[1] - cfg.xrange[0],
-                cfg.yrange[1] - cfg.yrange[0],
-                cfg.zrange[1] - cfg.zrange[0],
+                config.xrange[1] - config.xrange[0],
+                config.yrange[1] - config.yrange[0],
+                config.zrange[1] - config.zrange[0],
             ]
         ).max()
         * 0.5
     )
 
-    mid_x = (cfg.xrange[1] + cfg.xrange[0]) / 2
-    mid_y = (cfg.yrange[1] + cfg.yrange[0]) / 2
-    mid_z = (cfg.zrange[1] + cfg.zrange[0]) / 2
+    mid_x = (config.xrange[1] + config.xrange[0]) / 2
+    mid_y = (config.yrange[1] + config.yrange[0]) / 2
+    mid_z = (config.zrange[1] + config.zrange[0]) / 2
 
     ax.set_xlim(mid_x - axis_range, mid_x + axis_range)
     ax.set_ylim(mid_y - axis_range, mid_y + axis_range)
     ax.set_zlim(mid_z - axis_range, mid_z + axis_range)
-    ax.set_xlabel(cfg.xlabel)
-    ax.set_ylabel(cfg.ylabel)
-    ax.set_zlabel(cfg.zlabel)
+    ax.set_xlabel(config.xlabel)
+    ax.set_ylabel(config.ylabel)
+    ax.set_zlabel(config.zlabel)
     # plt.xlim(config.xrange)
     # plt.ylim(config.yrange)
     # plt.xlabel(config.xlabel)
@@ -111,7 +111,7 @@ def draw_axes(plt, ax, cfg):
     plt.grid(c="gainsboro", zorder=9)
 
 
-def on_key_pressed(event, plt, config, params):
+def on_key_pressed(event, plt, ax, config, params):
     match event.key:
         case "q":
             config.isRunning = False
@@ -119,7 +119,7 @@ def on_key_pressed(event, plt, config, params):
             if event.key == "f":
                 config.only_map = not config.only_map
             plt.cla()
-            draw_axes(plt, config)
+            draw_axes(plt, ax, config)
         case "p":  # For parameter control
             config.param_idx = (config.param_idx + 1) % len(config.param_keys)
             print(f"changable parameter: {config.param_keys[config.param_idx]}")
