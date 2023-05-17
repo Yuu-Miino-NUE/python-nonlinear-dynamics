@@ -3,10 +3,13 @@ class MatplotConfig:
     figsize = (6, 6)
     xlabel = "x"
     ylabel = "y"
+    zlabel = "z"
     xrange = (-3, 3)
     yrange = (-3, 3)
+    zrange = (-3, 3)
     xkey = 0
     ykey = 1
+    zkey = 2
     linewidth = 1
     pointsize = 3
     alpha = 0.3
@@ -26,10 +29,12 @@ class MatplotConfig:
 
 def init_plot(y0, params, **kwargs):
     from matplotlib import pyplot as plt
+    from mpl_toolkits.mplot3d import Axes3D
 
     cfg = MatplotConfig(**kwargs)
 
-    plt.figure(figsize=cfg.figsize)
+    fig = plt.figure(figsize=cfg.figsize)
+    ax = fig.add_subplot(projection="3d")
 
     plt.rcParams["keymap.fullscreen"].remove("f")
     plt.rcParams["keymap.quit"].remove("q")
@@ -37,25 +42,27 @@ def init_plot(y0, params, **kwargs):
         "key_press_event", lambda event: on_key_pressed(event, plt, cfg, params)
     )
     plt.connect("button_press_event", lambda event: on_click(event, plt, cfg, y0))
-    draw_axes(plt, cfg)
+    draw_axes(plt, ax, cfg)
 
-    return (plt, cfg)
+    return (plt, ax, cfg)
 
 
-def draw_traj(plt, cfg, soly):
+def draw_traj(plt, ax, cfg, soly):
     if not cfg.only_map:
-        plt.plot(
+        ax.plot(
             soly[cfg.xkey, :],
             soly[cfg.ykey, :],
+            soly[cfg.zkey, :],
             linewidth=cfg.linewidth,
             color=cfg.traj_color,
             ls="-",
             alpha=cfg.alpha,
         )
 
-    plt.plot(
+    ax.plot(
         soly[cfg.xkey, -1],
         soly[cfg.ykey, -1],
+        soly[cfg.zkey, -1],
         "o",
         markersize=cfg.pointsize,
         color=cfg.point_color,
@@ -73,11 +80,34 @@ def erase_old_traj(plt, cfg):
             line.remove()
 
 
-def draw_axes(plt, config):
-    plt.xlim(config.xrange)
-    plt.ylim(config.yrange)
-    plt.xlabel(config.xlabel)
-    plt.ylabel(config.ylabel)
+def draw_axes(plt, ax, cfg):
+    import numpy as np
+
+    axis_range = (
+        np.array(
+            [
+                cfg.xrange[1] - cfg.xrange[0],
+                cfg.yrange[1] - cfg.yrange[0],
+                cfg.zrange[1] - cfg.zrange[0],
+            ]
+        ).max()
+        * 0.5
+    )
+
+    mid_x = (cfg.xrange[1] + cfg.xrange[0]) / 2
+    mid_y = (cfg.yrange[1] + cfg.yrange[0]) / 2
+    mid_z = (cfg.zrange[1] + cfg.zrange[0]) / 2
+
+    ax.set_xlim(mid_x - axis_range, mid_x + axis_range)
+    ax.set_ylim(mid_y - axis_range, mid_y + axis_range)
+    ax.set_zlim(mid_z - axis_range, mid_z + axis_range)
+    ax.set_xlabel(cfg.xlabel)
+    ax.set_ylabel(cfg.ylabel)
+    ax.set_zlabel(cfg.zlabel)
+    # plt.xlim(config.xrange)
+    # plt.ylim(config.yrange)
+    # plt.xlabel(config.xlabel)
+    # plt.ylabel(config.ylabel)
     plt.grid(c="gainsboro", zorder=9)
 
 

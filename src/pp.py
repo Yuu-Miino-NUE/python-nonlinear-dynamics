@@ -22,7 +22,7 @@ tend = duffing_period
 tspan = arange(tstart, tend, 1e-2)  # tick = 1e-2
 
 # Matplotlib initialization
-plt, cfg = init_plot(y0, params, **duffing_config)
+plt, ax, cfg = init_plot(y0, params, **duffing_config)
 
 # Draw trajectory
 while cfg.isRunning:
@@ -30,7 +30,7 @@ while cfg.isRunning:
     sol = solve_ivp(duffing, (tstart, tend), y0, t_eval=tspan, rtol=1e-5, args=[params])
 
     # Draw calculated result
-    draw_traj(plt, cfg, sol.y)
+    draw_traj(plt, ax, cfg, sol.y)
 
     # Post process
     y0[:] = sol.y[:, -1]  # Not y0 = sol.y[:, -1], strictly
