@@ -1,20 +1,13 @@
 import json, sys
-import time
 import numpy as np
 from scipy.integrate import solve_ivp
-from nonlinear_systems import duffing, duffing_config, duffing_period
-from biftools import newton, det_derivative
-
-with open(sys.argv[1]) as f:
-    data = json.load(f)
-y0 = data["y0"]
-params = data["params"]
-dim = len(y0)
+from nonlinear_systems import duffing, duffing_period
+from biftools import newton, det_derivative, state_to_derivatives
 
 
 # function for newton(): any args -> F, J
-def objective_func(x0, params):
-    params["B"] = x0[dim]
+def objective_func(x0, params, dim, bf_param_key):
+    params[bf_param_key] = x0[dim]
     initial_state = x0[:dim]
     initial_state = np.append(initial_state, np.eye(dim).flatten())
     initial_state = np.append(
@@ -26,19 +19,10 @@ def objective_func(x0, params):
         initial_state,
         method="RK45",
         rtol=1e-8,
-        args=[params, "B"],
+        args=[params, bf_param_key],
     )
     state = state.y[:, -1]
-    idx = 0
-    phi = state[idx:dim]
-    idx += dim
-    dphidx = state[idx : idx + dim * dim].reshape(dim, dim).T
-    idx += dim * dim
-    dphidlambda = state[idx : idx + dim]
-    idx += dim
-    dphidxdx = state[idx : idx + dim * dim * dim].reshape(dim, dim, dim)
-    idx += dim * dim * dim
-    dphidxdlambda = state[idx : idx + dim * dim].reshape(dim, dim).T
+    phi, dphidx, dphidlambda, dphidxdx, dphidxdlambda = state_to_derivatives(state, dim)
 
     # prepare objective function
     F = phi - initial_state[:dim]
@@ -56,12 +40,19 @@ def objective_func(x0, params):
     return F, J, np.linalg.eigvals(dphidx)
 
 
+with open(sys.argv[1]) as f:
+    data = json.load(f)
+y0 = data["y0"]
+params = data["params"]
+dim = len(y0)
+
+
 # initial vector for first newton method
 # x0 = np.array([y0[0], y0[1]])
 x0 = np.array([y0[0], y0[1], params["B"]])
 
 for p in range(data["inc_iter"]):
-    result = newton(objective_func, x0, args=(params))
+    result = newton(objective_func, x0, args=(params, dim, "B"))
     if result.success:
         print(result.message)
         print(result.x)

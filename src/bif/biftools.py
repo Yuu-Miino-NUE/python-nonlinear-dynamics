@@ -12,32 +12,34 @@ class NewtonResult:
 def newton(func, x0, args=(), tol=1e-8, max_iter=16, explode=100):
     result = NewtonResult()
     for i in range(max_iter):
-        F, J, eigvals = func(x0, args)
+        F, J, eigvals = func(x0, *args)
         result.eigvals = eigvals
         try:
             dx = np.linalg.solve(J, -F)
         except np.linalg.LinAlgError:
             result.x = x0
-            result.success = False
             result.message = "Singular Jacobian"
-            return result
+            break
         x = dx + x0
         if np.linalg.norm(dx) > explode:
             result.x = x
-            result.success = False
-            result.message = "Solution exploded (norm overs " + str(explode) + ")"
-            return result
-        elif all(elem < tol for elem in dx):
+            result.message = (
+                f"Solution exploded (norm overs {explode}): {np.linalg.norm(dx)}"
+            )
+            break
+        elif all(elem < tol for elem in np.abs(dx)):
             result.x = x
             result.success = True
-            result.message = "Converged (" + str(i) + " iterations)"
-            return result
+            result.message = f"Converged ({i} iterations)"
+            break
+        else:  # For the next step
+            pass
         x0 = x
     else:
         result.x = x0
-        result.success = False
-        result.message = "Iteration over (" + str(max_iter) + " iterations)"
-        return result
+        result.message = f"Iteration over ({max_iter} iterations)"
+
+    return result
 
 
 def det_derivative(A, dA):
@@ -78,3 +80,17 @@ def bialt_square_derivative(A, dA):
             dtemp[i, j] = dA[row[i], col[j]]
         result[next(result_idx)] = det_derivative(temp, dtemp)
     return result
+
+
+def state_to_derivatives(state, dim):
+    idx = 0
+    phi = state[idx:dim]
+    idx += dim
+    dphidx = state[idx : idx + dim**2].reshape(dim, dim).T
+    idx += dim**2
+    dphidlambda = state[idx : idx + dim]
+    idx += dim
+    dphidxdx = state[idx : idx + dim**3].reshape(*([dim] * 3))
+    idx += dim**3
+    dphidxdlambda = state[idx : idx + dim**2].reshape(dim, dim).T
+    return (phi, dphidx, dphidlambda, dphidxdx, dphidxdlambda)
