@@ -58,20 +58,49 @@ class DDS:
 
 
 class EigenSpace:
-    def __init__(self, xfix, eigval, eigvec, factor=1e-2, num=100) -> None:
+    def __init__(self, xfix, eigval, eigvec, factors=(1e-2, 1e-2), num=1000) -> None:
         self.xfix = xfix
         self.eigval = eigval
         self.eigvec = eigvec
 
-        self.eigspace = np.linspace(xfix - eigvec * factor, xfix + eigvec * factor, num)
+        self.eigspace = np.linspace(
+            xfix - eigvec * factors[0], xfix + eigvec * factors[1], num
+        )
 
-    def image(self, func, param, itr=2):
+    def image(
+        self, func, param, itr=2, xlim=(-1.5, 1.5), ylim=(-1.5, 1.5), min_images=2000
+    ):
         def _f(x):
             for _ in range(itr):
                 x = func(x, param)
             return x
 
-        return np.array([_f(x) for x in self.eigspace])
+        isFin = False
+
+        ret = np.empty(2)
+        ll = np.array([xlim[0], ylim[0]])  # lower left
+        ur = np.array([xlim[1], ylim[1]])  # upper right
+
+        while not isFin:
+            ret = np.array([_f(x) for x in self.eigspace])
+            mask = np.all(np.logical_and(ll <= ret, ret <= ur), axis=1)
+
+            print(ret.shape, mask.shape)
+            ret = np.ma.array(ret, mask=~np.column_stack([mask, mask]))
+            print(ret.count(axis=0)[0])
+
+            if ret.count(axis=0)[0] >= min_images:
+                isFin = True
+            else:
+                self.eigspace = np.linspace(
+                    self.eigspace[0],
+                    self.eigspace[-1],
+                    np.ceil(
+                        min_images / max(ret.count(axis=0)[0], 1) * len(self.eigspace)
+                    ).astype("int"),
+                )
+
+        return ret
 
 
 class Manifold:
@@ -81,5 +110,9 @@ class Manifold:
         self.isStable = True if np.abs(eigval) < 1 else False
 
 
-def calc_manifold(func, espace, param, itr=2):
-    return Manifold(espace.image(func, param, itr), espace.eigval)
+def calc_manifold(
+    func, espace, param, itr=2, xlim=(-1.5, 1.5), ylim=(-1.5, 1.5), min_images=2000
+):
+    return Manifold(
+        espace.image(func, param, itr, xlim, ylim, min_images), espace.eigval
+    )

@@ -8,27 +8,38 @@ from tools import DDS, EigenSpace, calc_manifold
 def main(x0, param):
     # Discrete-time dynamical systems
     dds = DDS(henon, 2, ["a", "b"])
+    xlim = np.array((-1.5, 1.5))
+    ylim = np.array((-0.5, 0.5))
 
     xfix = dds.fix(x0, param).x
     print(xfix)
     eigs, vecs = np.linalg.eig(dds.jac(xfix, param))
     print(eigs)
 
-    nums = [1000, 10000]
+    factors = ((1e-2, 1e-2), (2e-4, 2e-4))
     espaces = [
-        EigenSpace(xfix, eig, vec, num=num) for eig, vec, num in zip(eigs, vecs, nums)
+        EigenSpace(xfix, eig, vec, factors=fs)
+        for eig, vec, fs in zip(eigs, vecs, factors)
     ]
 
-    itrs = [12, 6]
+    itrs = [12, 10]
     manis = [
-        calc_manifold(henon if np.abs(e.eigval) > 1 else henon_inverse, e, param, itr=i)
+        calc_manifold(
+            henon if np.abs(e.eigval) > 1 else henon_inverse,
+            e,
+            param,
+            itr=i,
+            xlim=xlim * 1.1,
+            ylim=xlim * 1.1,
+            min_images=2000,
+        )
         for e, i in zip(espaces, itrs)
     ]
 
     plt.figure(figsize=(8, 8))
     plt.grid()
-    plt.xlim([-1.5, 1.5])
-    plt.ylim([-1.5, 1.5])
+    plt.xlim(xlim)
+    plt.ylim(ylim)
     [
         plt.plot(m.points[:, 0], m.points[:, 1], "r-" if m.isStable is False else "b-")
         for m in manis
