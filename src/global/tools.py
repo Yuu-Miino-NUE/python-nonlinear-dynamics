@@ -68,37 +68,33 @@ class EigenSpace:
         )
 
     def image(
-        self, func, param, itr=2, xlim=(-1.5, 1.5), ylim=(-1.5, 1.5), min_images=2000
+        self, func, param, itr=2, xlim=(-1.5, 1.5), ylim=(-1.5, 1.5), min_images=1000
     ):
-        def _f(x):
-            for _ in range(itr):
-                x = func(x, param)
-            return x
-
-        isFin = False
-
         ret = np.empty(2)
         ll = np.array([xlim[0], ylim[0]])  # lower left
         ur = np.array([xlim[1], ylim[1]])  # upper right
+        _domain = self.eigspace
 
-        while not isFin:
-            ret = np.array([_f(x) for x in self.eigspace])
+        i = 0
+        while i < itr:
+            ret = np.array([func(x, param) for x in _domain])
+
             mask = np.all(np.logical_and(ll <= ret, ret <= ur), axis=1)
-
-            print(ret.shape, mask.shape)
             ret = np.ma.array(ret, mask=~np.column_stack([mask, mask]))
-            print(ret.count(axis=0)[0])
 
             if ret.count(axis=0)[0] >= min_images:
-                isFin = True
+                i += 1
+                _domain = np.ma.compressed(ret).reshape(-1, 2)
             else:
-                self.eigspace = np.linspace(
-                    self.eigspace[0],
-                    self.eigspace[-1],
+                # TODO: Add new interporation method for each subspaces
+                _domain = np.linspace(
+                    _domain[0],
+                    _domain[-1],
                     np.ceil(
-                        min_images / max(ret.count(axis=0)[0], 1) * len(self.eigspace)
+                        min_images / max(ret.count(axis=0)[0], 1) * len(_domain)
                     ).astype("int"),
                 )
+                print(ret.count(axis=0)[0], "<", min_images, _domain.shape)
 
         return ret
 
