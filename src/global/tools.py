@@ -70,31 +70,32 @@ class EigenSpace:
     def image(
         self, func, param, itr=2, xlim=(-1.5, 1.5), ylim=(-1.5, 1.5), min_images=1000
     ):
+        def _f(x):
+            for _ in range(itr):
+                x = func(x, param)
+            return x
+
+        isFin = False
+
         ret = np.empty(2)
         ll = np.array([xlim[0], ylim[0]])  # lower left
         ur = np.array([xlim[1], ylim[1]])  # upper right
-        _domain = self.eigspace
 
-        i = 0
-        while i < itr:
-            ret = np.array([func(x, param) for x in _domain])
-
+        while not isFin:
+            ret = np.array([_f(x) for x in self.eigspace])
             mask = np.all(np.logical_and(ll <= ret, ret <= ur), axis=1)
             ret = np.ma.array(ret, mask=~np.column_stack([mask, mask]))
 
             if ret.count(axis=0)[0] >= min_images:
-                i += 1
-                _domain = np.ma.compressed(ret).reshape(-1, 2)
+                isFin = True
             else:
-                # TODO: Add new interporation method for each subspaces
-                _domain = np.linspace(
-                    _domain[0],
-                    _domain[-1],
+                self.eigspace = np.linspace(
+                    self.eigspace[0],
+                    self.eigspace[-1],
                     np.ceil(
-                        min_images / max(ret.count(axis=0)[0], 1) * len(_domain)
+                        min_images / max(ret.count(axis=0)[0], 1) * len(self.eigspace)
                     ).astype("int"),
                 )
-                print(ret.count(axis=0)[0], "<", min_images, _domain.shape)
 
         return ret
 
@@ -112,3 +113,33 @@ def calc_manifold(
     return Manifold(
         espace.image(func, param, itr, xlim, ylim, min_images), espace.eigval
     )
+
+
+def clip_masked_manifold(masked_manifold: np.ma.MaskedArray):
+    ret = []
+
+    _arr = np.array([])
+    for i, p in enumerate(masked_manifold.mask):
+        if True not in p:
+            if _arr.size == 0:
+                _arr = np.array([masked_manifold.data[i]])
+            else:
+                _arr = np.vstack([_arr, masked_manifold.data[i]])
+        else:
+            if _arr.size != 0:
+                ret.append(_arr)
+                _arr = np.array([])
+    if _arr.size != 0:
+        ret.append(_arr)
+        _arr = np.array([])
+
+    return ret
+
+
+def save_masked_manifold(filename: str, masked_manifold: np.ma.MaskedArray):
+    data = clip_masked_manifold(masked_manifold)
+    with open(filename, "w") as f:
+        for arr in data:
+            for x, y in arr:
+                f.write(f"{x} {y}\n")
+            f.write("\n")

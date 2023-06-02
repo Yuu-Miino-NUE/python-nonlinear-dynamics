@@ -2,7 +2,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 from henon import henon, henon_inverse
-from tools import DDS, EigenSpace, calc_manifold
+from tools import DDS, EigenSpace, calc_manifold, save_masked_manifold
 
 
 def main(x0, param):
@@ -46,6 +46,8 @@ def main(x0, param):
     ]
     plt.plot(xfix[0], xfix[1], c="white", mec="black", mew=1.5, marker="o")
     plt.show()
+
+    [save_masked_manifold(f"out{i:02d}.mani", m.points) for i, m in enumerate(manis)]
 
 
 if __name__ == "__main__":
