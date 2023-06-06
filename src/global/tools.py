@@ -167,3 +167,30 @@ class ManifoldConfig:
         self.ylim = np.array(ylim)
         self.itrs = itrs
         self.min_images = min_images
+
+
+class HorseshoeRect:
+    def __init__(self, xfix, ll=(-0.1, -0.1), ur=(0.1, 0.1), num=2000) -> None:
+        self.ll = xfix + np.array(ll)
+        self.lr = xfix + np.array([ur[0], ll[1]])
+        self.ul = xfix + np.array([ll[0], ur[1]])
+        self.ur = xfix + np.array(ur)
+
+        self.num = num
+
+        self.box = np.vstack(
+            [
+                np.linspace(self.ll, self.lr, self.num),
+                np.linspace(self.lr, self.ur, self.num),
+                np.linspace(self.ur, self.ul, self.num),
+                np.linspace(self.ul, self.ll, self.num),
+            ]
+        )
+
+    def image(self, func, param, itr=2):
+        def _f(x):
+            for _ in range(itr):
+                x = func(x, param)
+            return x
+
+        return np.array([_f(x) for x in self.box])
