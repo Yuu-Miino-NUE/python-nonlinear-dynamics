@@ -58,18 +58,19 @@ class DDS:
 
 
 class EigenSpace:
-    def __init__(self, xfix, eigval, eigvec, factors=(1e-2, 1e-2), num=1000) -> None:
+    def __init__(self, xfix, eigval, eigvec, radius=1e-2, num=1000) -> None:
         self.xfix = xfix
         self.eigval = eigval
         self.eigvec = eigvec
 
-        self.eigspace = np.linspace(
-            xfix - eigvec * factors[0], xfix + eigvec * factors[1], num
-        )
+        _v = eigvec * radius
+        self.eigspace = np.linspace(xfix - _v, xfix + _v, num)
 
     def image(
         self, func, param, itr=2, xlim=(-1.5, 1.5), ylim=(-1.5, 1.5), min_images=1000
     ):
+        import sys
+
         def _f(x):
             for _ in range(itr):
                 x = func(x, param)
@@ -94,8 +95,13 @@ class EigenSpace:
                     self.eigspace[-1],
                     np.ceil(
                         min_images / max(ret.count(axis=0)[0], 1) * len(self.eigspace)
+                        + 1
                     ).astype("int"),
                 )
+            print(
+                f"valid images: {ret.count(axis=0)[0]}, isFin: {isFin}", file=sys.stderr
+            )
+        print(file=sys.stderr)
 
         return ret
 
@@ -143,3 +149,15 @@ def save_masked_manifold(filename: str, masked_manifold: np.ma.MaskedArray):
             for x, y in arr:
                 f.write(f"{x} {y}\n")
             f.write("\n")
+
+
+class ManifoldConfig:
+    def __init__(
+        self,
+        xlim=np.array([-1.5, 1.5]),
+        ylim=np.array([-1.5, 1.5]),
+        itrs=(12, 10),
+    ) -> None:
+        self.xlim = np.array(xlim)
+        self.ylim = np.array(ylim)
+        self.itrs = itrs
