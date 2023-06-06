@@ -6,7 +6,7 @@ from tools import DDS, EigenSpace, calc_manifold, save_masked_manifold, Manifold
 
 def main(x0, param, es_config=[{}], mani_config={}, filename="tmp"):
     # Prepare
-    dds = DDS(henon, 2, ["a", "b"])
+    dds = DDS(henon, henon_inverse, 2, ["a", "b"])
     cfg = ManifoldConfig(**mani_config)
 
     # Get fixed point
@@ -22,15 +22,15 @@ def main(x0, param, es_config=[{}], mani_config={}, filename="tmp"):
     # Calculate
     manis = [
         calc_manifold(
-            henon if np.abs(e.eigval) > 1 else henon_inverse,
+            dds.image if np.abs(e.eigval) > 1 else dds.inverse,
             e,
             param,
             itr=i,
             xlim=cfg.xlim * 1.1,
             ylim=cfg.xlim * 1.1,
-            min_images=2000,
+            min_images=mi,
         )
-        for e, i in zip(espaces, cfg.itrs)
+        for e, i, mi in zip(espaces, cfg.itrs, cfg.min_images)
     ]
 
     # Plot
@@ -39,7 +39,10 @@ def main(x0, param, es_config=[{}], mani_config={}, filename="tmp"):
 
     # Save
     [
-        save_masked_manifold(f"{filename}_manifold_{i:02d}.dat", m.points)
+        save_masked_manifold(
+            f"{filename}_manifold_{i:02d}_" + ("s" if m.isStable else "u") + ".dat",
+            m.points,
+        )
         for i, m in enumerate(manis)
     ]
 
@@ -73,7 +76,7 @@ if __name__ == "__main__":
                 data = json.load(f)
             x0 = np.array(data["x0"])
             param = data["param"]
-            es_config = [] if "eigenspaces" not in data else data["eigenspaces"]
+            es_config = [{}] if "eigenspaces" not in data else data["eigenspaces"]
             mani_config = {} if "manifold" not in data else data["manifold"]
         except:
             print("Error: invalid argument")

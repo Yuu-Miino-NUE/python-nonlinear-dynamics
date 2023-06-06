@@ -20,8 +20,9 @@ class FixResult:
 
 # Discrete-time dynamical systems
 class DDS:
-    def __init__(self, func, dim, param_keys) -> None:
+    def __init__(self, func, inverse_func, dim, param_keys) -> None:
         self.func = func
+        self.inverse_func = inverse_func
         self.dim = dim
 
         _x = sp.symbols([f"x{i}" for i in range(dim)])
@@ -33,6 +34,9 @@ class DDS:
 
     def image(self, x0, param):
         return self.func(x0, param)
+
+    def inverse(self, x0, param):
+        return self.inverse_func(x0, param)
 
     def jac(self, x0, param):
         return self.jac_func(x0, list(param.values()))
@@ -156,8 +160,10 @@ class ManifoldConfig:
         self,
         xlim=np.array([-1.5, 1.5]),
         ylim=np.array([-1.5, 1.5]),
-        itrs=(12, 10),
+        itrs=(5, 5),
+        min_images=(2000, 2000),
     ) -> None:
         self.xlim = np.array(xlim)
         self.ylim = np.array(ylim)
         self.itrs = itrs
+        self.min_images = min_images
