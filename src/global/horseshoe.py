@@ -10,6 +10,7 @@ def main(x0, param, hs_config={}, filename="tmp"):
 
     # Get fixed point
     xfix = dds.fix(x0, param).x
+    print(xfix)
 
     # Calculate
     rect = HorseshoeRect(xfix, **hs_config["rect"])
@@ -45,8 +46,8 @@ def plot_horseshoe(
 
     def _plot(plt):
         plt.plot(xfix[0], xfix[1], "o", c="black")
-        plt.fill(imag_rect[:, 0], imag_rect[:, 1], "-", c="red", alpha=0.1)
-        plt.fill(preimag_rect[:, 0], preimag_rect[:, 1], "-", c="blue", alpha=0.1)
+        plt.fill(imag_rect[:, 0], imag_rect[:, 1], "-", c="red", alpha=0.2)
+        plt.fill(preimag_rect[:, 0], preimag_rect[:, 1], "-", c="blue", alpha=0.2)
         plt.fill(rect[:, 0], rect[:, 1], "-", c="black", alpha=0.1)
 
     all = fig.add_subplot(121)
