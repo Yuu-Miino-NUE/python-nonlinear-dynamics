@@ -1,4 +1,5 @@
 import numpy as np
+from shapely.geometry import Polygon
 
 from henon import henon, henon_inverse
 from tools import DDS, HorseshoeRect
@@ -19,13 +20,29 @@ def main(x0, param, hs_config={}, filename="tmp"):
     itr_backward = 1 if "itr_backward" not in hs_config else hs_config["itr_backward"]
     preimage_rect = rect.image(dds.inverse, param, itr=itr_backward)
 
+    poly_imag = Polygon(imag_rect)
+    poly_preimag = Polygon(preimage_rect)
+    poly_int = poly_imag.intersection(poly_preimag) - Polygon(rect.box)
+    print(poly_int)
+    poly_int_list = np.array(
+        [r[0] for r in [list(p.coords) for p in list(poly_int.geoms)]]
+    )
+
     # Plot
     xlim = (-1.5, 1.5)
     ylim = (-0.5, 0.5)
     xnlim = (rect.ll[0], rect.lr[0])
     ynlim = (rect.ll[1], rect.ul[1])
     plt = plot_horseshoe(
-        xfix, rect.box, imag_rect, preimage_rect, xlim, ylim, xnlim, ynlim
+        xfix,
+        rect.box,
+        imag_rect,
+        preimage_rect,
+        poly_int_list,
+        xlim,
+        ylim,
+        xnlim,
+        ynlim,
     )
     plt.show()
 
@@ -35,6 +52,7 @@ def plot_horseshoe(
     rect,
     imag_rect,
     preimag_rect,
+    intersection,
     xlim=(-1.5, 1.5),
     ylim=(-0.5, 0.5),
     xnlim=(-1.5, 1.5),
@@ -49,6 +67,7 @@ def plot_horseshoe(
         plt.fill(imag_rect[:, 0], imag_rect[:, 1], "-", c="red", alpha=0.2)
         plt.fill(preimag_rect[:, 0], preimag_rect[:, 1], "-", c="blue", alpha=0.2)
         plt.fill(rect[:, 0], rect[:, 1], "-", c="black", alpha=0.1)
+        plt.fill(intersection[:, 0], intersection[:, 1], "-", c="green")
 
     all = fig.add_subplot(121)
     all.grid()
