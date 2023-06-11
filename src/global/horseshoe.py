@@ -1,5 +1,5 @@
 import numpy as np
-from shapely.geometry import Polygon
+from shapely.geometry import Polygon, shape
 
 from henon import henon, henon_inverse
 from tools import DDS, HorseshoeRect
@@ -22,11 +22,9 @@ def main(x0, param, hs_config={}, filename="tmp"):
 
     poly_imag = Polygon(imag_rect)
     poly_preimag = Polygon(preimage_rect)
-    poly_int = poly_imag.intersection(poly_preimag) - Polygon(rect.box)
+    poly_int = poly_imag.intersection(poly_preimag).difference(Polygon(rect.box))
     print(poly_int)
-    poly_int_list = np.array(
-        [r[0] for r in [list(p.coords) for p in list(poly_int.geoms)]]
-    )
+    poly_int_list = np.hstack([np.array(g.boundary.xy) for g in poly_int.geoms]).T
 
     # Plot
     xlim = (-1.5, 1.5)
