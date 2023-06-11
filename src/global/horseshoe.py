@@ -23,8 +23,18 @@ def main(x0, param, hs_config={}, filename="tmp"):
     poly_imag = Polygon(imag_rect)
     poly_preimag = Polygon(preimage_rect)
     poly_int = poly_imag.intersection(poly_preimag).difference(Polygon(rect.box))
-    print(poly_int)
+    print(type(poly_int))
     poly_int_list = np.hstack([np.array(g.boundary.xy) for g in poly_int.geoms]).T
+
+    hrect = HorseshoeRect(xfix, **hs_config["rect"], box=poly_int_list)
+    hrect_forward = [
+        hrect.image(dds.image, param, itr=i)
+        for i in range(1, hs_config["itr_backward"] + 1)
+    ]
+    hrect_backward = [
+        hrect.image(dds.inverse, param, itr=i)
+        for i in range(1, hs_config["itr_forward"] + 1)
+    ]
 
     # Plot
     xlim = (-1.5, 1.5)
@@ -37,6 +47,8 @@ def main(x0, param, hs_config={}, filename="tmp"):
         imag_rect,
         preimage_rect,
         poly_int_list,
+        hrect_forward,
+        hrect_backward,
         xlim,
         ylim,
         xnlim,
@@ -51,6 +63,8 @@ def plot_horseshoe(
     imag_rect,
     preimag_rect,
     intersection,
+    hrect_forward,
+    hrect_backward,
     xlim=(-1.5, 1.5),
     ylim=(-0.5, 0.5),
     xnlim=(-1.5, 1.5),
@@ -66,6 +80,8 @@ def plot_horseshoe(
         plt.fill(preimag_rect[:, 0], preimag_rect[:, 1], "-", c="blue", alpha=0.2)
         plt.fill(rect[:, 0], rect[:, 1], "-", c="black", alpha=0.1)
         plt.fill(intersection[:, 0], intersection[:, 1], "-", c="green")
+        [plt.fill(hf[:, 0], hf[:, 1], "-", c="magenta") for hf in hrect_forward]
+        [plt.fill(hb[:, 0], hb[:, 1], "-", c="green") for hb in hrect_backward]
 
     all = fig.add_subplot(121)
     all.grid()
