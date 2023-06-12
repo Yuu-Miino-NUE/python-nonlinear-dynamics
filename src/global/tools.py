@@ -177,6 +177,8 @@ class HorseshoeRect:
         self.lr = xfix + np.array([ur[0], ll[1]])
         self.ul = xfix + np.array([ll[0], ur[1]])
         self.ur = xfix + np.array(ur)
+        self.width = self.lr[0] - self.ll[0]
+        self.height = self.ul[1] - self.ll[1]
 
         self.num = num
 

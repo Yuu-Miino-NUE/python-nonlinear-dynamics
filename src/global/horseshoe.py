@@ -1,5 +1,5 @@
 import numpy as np
-from shapely.geometry import Polygon, shape
+from shapely.geometry import Polygon, MultiPolygon
 
 from henon import henon, henon_inverse
 from tools import DDS, HorseshoeRect
@@ -24,7 +24,13 @@ def main(x0, param, hs_config={}, filename="tmp"):
     poly_preimag = Polygon(preimage_rect)
     poly_int = poly_imag.intersection(poly_preimag).difference(Polygon(rect.box))
     print(type(poly_int))
-    poly_int_list = np.hstack([np.array(g.boundary.xy) for g in poly_int.geoms]).T
+    if isinstance(poly_int, MultiPolygon):
+        poly_int_list = np.hstack([np.array(g.boundary.xy) for g in poly_int.geoms]).T
+    elif isinstance(poly_int, Polygon):
+        poly_int_list = np.array(poly_int.boundary.xy).T
+    else:
+        print(type(poly_int))
+        poly_int_list = None
 
     hrect = HorseshoeRect(xfix, **hs_config["rect"], box=poly_int_list)
     hrect_forward = [
@@ -39,8 +45,8 @@ def main(x0, param, hs_config={}, filename="tmp"):
     # Plot
     xlim = (-1.5, 1.5)
     ylim = (-0.5, 0.5)
-    xnlim = (rect.ll[0], rect.lr[0])
-    ynlim = (rect.ll[1], rect.ul[1])
+    xnlim = (rect.ll[0] - rect.width * 0.05, rect.lr[0] + rect.width * 0.05)
+    ynlim = (rect.ll[1] - rect.height * 0.05, rect.ul[1] + rect.height * 0.05)
     plt = plot_horseshoe(
         xfix,
         rect.box,
@@ -79,9 +85,15 @@ def plot_horseshoe(
         plt.fill(imag_rect[:, 0], imag_rect[:, 1], "-", c="red", alpha=0.2)
         plt.fill(preimag_rect[:, 0], preimag_rect[:, 1], "-", c="blue", alpha=0.2)
         plt.fill(rect[:, 0], rect[:, 1], "-", c="black", alpha=0.1)
-        plt.fill(intersection[:, 0], intersection[:, 1], "-", c="green")
-        [plt.fill(hf[:, 0], hf[:, 1], "-", c="magenta") for hf in hrect_forward]
-        [plt.fill(hb[:, 0], hb[:, 1], "-", c="green") for hb in hrect_backward]
+        plt.fill(intersection[:, 0], intersection[:, 1], "-", c="black", alpha=0.4)
+        [
+            plt.fill(hf[:, 0], hf[:, 1], "-", c="magenta", alpha=0.4)
+            for hf in hrect_forward
+        ]
+        [
+            plt.fill(hb[:, 0], hb[:, 1], "-", c="green", alpha=0.4)
+            for hb in hrect_backward
+        ]
 
     all = fig.add_subplot(121)
     all.grid()
