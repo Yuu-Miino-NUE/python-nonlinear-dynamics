@@ -19,52 +19,39 @@ params = {
 plt.rcParams.update(params)
 
 
-def henon_map(x, y, a=1.4, b=0.3):
+def henon_map(x, y, a, b):
     return 1 - a * x**2 + y, b * x
 
 
-def calculate_lyapunov_exponent(a_range, b, num_iter=1000, transient=100, delta=1e-8):
-    lyapunov_exponents = []
-
-    for a in a_range:
-        x, y = 0.1, 0.1  # 初期条件
-        x_perturbed, y_perturbed = x + delta, y + delta  # 微小な摂動を加えた初期条件
-        sum_log_divergence = 0
-
-        # 過渡状態をスキップ（アイドリング）
-        for _ in range(transient):
-            x, y = henon_map(x, y, a=a, b=b)
-            x_perturbed, y_perturbed = henon_map(x_perturbed, y_perturbed, a=a, b=b)
-
-        # リヤプノフ指数の計算
-        for _ in range(num_iter):
-            x, y = henon_map(x, y, a=a, b=b)
-            x_perturbed, y_perturbed = henon_map(x_perturbed, y_perturbed, a=a, b=b)
-
-            # 2つの軌道間の距離を計算
-            distance = np.sqrt((x_perturbed - x) ** 2 + (y_perturbed - y) ** 2)
-
-            # 距離がゼロに近い場合を防ぐ
-            if distance > 0:
-                sum_log_divergence += np.log(distance / delta)
-
-                # 距離を正規化
-                scale = delta / distance
-                x_perturbed = x + scale * (x_perturbed - x)
-                y_perturbed = y + scale * (y_perturbed - y)
-            else:
-                # 距離がゼロの場合、摂動を再初期化
-                x_perturbed = x + delta
-                y_perturbed = y + delta
-
-        # 最大リヤプノフ指数を計算
-        lyapunov_exponent = sum_log_divergence / num_iter
-        lyapunov_exponents.append(lyapunov_exponent)
-
-    return lyapunov_exponents
+def henon_jacobian(x, y, a, b):
+    return [[-2 * a * x, 1], [b, 0]]
 
 
-def plot_lyapunov_exponent(a_range, lyapunov_exponents):    
+def calculate_lyapunov_exponent(a, b, x0, y0, num_iter, transient):
+    # 初期化
+    x, y = x0, y0
+    Q = np.eye(2)
+    sum_log_R = 0.0
+
+    # 過渡状態をスキップ（アイドリング）
+    for _ in range(transient):
+        x, y = henon_map(x, y, a=a, b=b)
+
+    # リヤプノフ指数の計算
+    for _ in range(num_iter):
+        x, y = henon_map(x, y, a=a, b=b)
+        J = henon_jacobian(x, y, a, b)
+        Q = J @ Q  # リストに@を使うと自動的にnumpy配列に変換される
+        Q, R = np.linalg.qr(Q)
+        sum_log_R += np.log(np.abs(np.diag(R)))
+
+    # 最大リヤプノフ指数を計算
+    lyapunov_exponent = sum_log_R[0] / num_iter
+
+    return lyapunov_exponent
+
+
+def plot_lyapunov_exponent(a_range, lyapunov_exponents):
     plt.figure(figsize=(10, 6))
     plt.plot(a_range, lyapunov_exponents, "-k", alpha=0.7)
     plt.title("Maximum Lyapunov Exponent of the Henon Map")
@@ -72,16 +59,23 @@ def plot_lyapunov_exponent(a_range, lyapunov_exponents):
     plt.ylabel(r"Lyapunov Exponent $\longrightarrow$")
     plt.axhline(0, color="black", linestyle="--", linewidth=0.8)
     plt.grid(True)
-    
-    # PDFで保存
+
     pdf = PdfPages("henon_lyapunov.pdf")
     pdf.savefig(dpi=300)
     pdf.close()
-    
+
     plt.show()
 
 
 if __name__ == "__main__":
     a_values = np.linspace(0.5, 1.4, 500)  # aの範囲
-    lyapunov_exponents = calculate_lyapunov_exponent(a_values, b=0.3)
+
+    # Lyapunov指数を計算
+    lyapunov_exponents = []
+    for a in a_values:
+        lyapunov_exponent = calculate_lyapunov_exponent(
+            a, b=0.3, x0=0.1, y0=0.1, num_iter=1000, transient=100
+        )
+        lyapunov_exponents.append(lyapunov_exponent)
+
     plot_lyapunov_exponent(a_values, lyapunov_exponents)
