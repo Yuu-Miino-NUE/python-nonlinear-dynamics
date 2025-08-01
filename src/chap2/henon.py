@@ -33,7 +33,7 @@ def plot_phase_portrait(iterations=10000, x0=0.1, y0=0.1, a=1.4, b=0.3):
 
     plt.figure(figsize=(8, 8))
     plt.scatter(x_vals, y_vals, s=0.1, color="black")
-    plt.title("Phase Portrait of the Hénon Map")
+    # plt.title("Phase Portrait of the Hénon Map")
     plt.xlabel(r"$x \longrightarrow$")
     plt.ylabel(r"$y \longrightarrow$")
     plt.axis("equal")

@@ -126,7 +126,7 @@ def plot_logistic_return_map(a=3.8, x0=0.5, num_points=500, num_iterations=20):
             zorder=7,
         )
 
-    plt.title(f"Logistic Map Return Map ($a = {a}$)")
+    # plt.title(f"Logistic Map Return Map ($a = {a}$)")
     plt.xlabel(r"$x_n \longrightarrow$")
     plt.ylabel(r"$x_{n+1} \longrightarrow$")
     plt.legend()

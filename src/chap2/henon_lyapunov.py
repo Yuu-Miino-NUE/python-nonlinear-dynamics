@@ -54,7 +54,7 @@ def calculate_lyapunov_exponent(a, b, x0, y0, num_iter, transient):
 def plot_lyapunov_exponent(a_range, lyapunov_exponents):
     plt.figure(figsize=(10, 6))
     plt.plot(a_range, lyapunov_exponents, "-k", alpha=0.7)
-    plt.title("Maximum Lyapunov Exponent of the Henon Map")
+    # plt.title("Maximum Lyapunov Exponent of the Henon Map")
     plt.xlabel(r"$a \longrightarrow$")
     plt.ylabel(r"Lyapunov Exponent $\longrightarrow$")
     plt.axhline(0, color="black", linestyle="--", linewidth=0.8)

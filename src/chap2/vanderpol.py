@@ -27,17 +27,28 @@ def vanderpol(t, state, mu):
     return [dxdt, dydt]
 
 
-def plot_phase_portrait(mu=1.0, t_span=(0, 20), y0=[1, 1]):
+def plot_phase_portrait(mu=1.0, t_span=(0, 20), y0=[1, 1], idle_time=10.0):
     # 時間刻みを設定
-    t_eval = np.arange(t_span[0], t_span[1], 0.01)
+    t_eval_idle = np.arange(0, idle_time, 0.01)
+    t_eval_main = np.arange(0, t_span[1] - idle_time, 0.01)
 
-    # 微分方程式を解く
-    sol = solve_ivp(vanderpol, t_span, y0, args=(mu,), t_eval=t_eval)
+    # アイドリング（過渡除去）
+    sol_idle = solve_ivp(vanderpol, (0, idle_time), y0, args=(mu,), t_eval=t_eval_idle)
+    y0_after_idle = [sol_idle.y[0, -1], sol_idle.y[1, -1]]
+
+    # 本計算
+    sol = solve_ivp(
+        vanderpol,
+        (0, t_span[1] - idle_time),
+        y0_after_idle,
+        args=(mu,),
+        t_eval=t_eval_main,
+    )
 
     # 位相ポートレートを描画
     plt.figure(figsize=(8, 8))
     plt.plot(sol.y[0], sol.y[1], "k-", linewidth=2)
-    plt.title(rf"Phase Portrait of the van der Pol Oscillator ($\mu={mu}$)")
+    # plt.title(rf"Phase Portrait of the van der Pol Oscillator ($\mu={mu}$)")
     plt.xlabel(r"$x \longrightarrow$")
     plt.ylabel(r"$dx/dt \longrightarrow$")
     plt.grid(True)

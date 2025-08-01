@@ -54,7 +54,7 @@ def compute_power_spectrum(time_series):
 def plot_power_spectrum(freqs, power_spectrum):
     plt.figure(figsize=(10, 6))
     plt.plot(freqs, power_spectrum, color="black")
-    plt.title("Power Spectrum of Henon Map")
+    # plt.title("Power Spectrum of Henon Map")
     plt.xlabel(r"Frequency $\longrightarrow$")
     plt.ylabel(r"Power $\longrightarrow$")
     plt.grid(True)
@@ -70,7 +70,7 @@ def plot_power_spectrum(freqs, power_spectrum):
 def plot_time_series(time_series):
     plt.figure(figsize=(10, 6))
     plt.plot(time_series, color="black", linewidth=1)
-    plt.title("Time Series of Henon Map")
+    # plt.title("Time Series of Henon Map")
     plt.xlabel(r"Time Step $\longrightarrow$")
     plt.ylabel(r"Value $\longrightarrow$")
     plt.grid(True)
