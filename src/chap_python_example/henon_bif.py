@@ -26,7 +26,7 @@ def henon_map(x, y, a=1.4, b=0.3):
 def plot_bifurcation_diagram(a_range, b, num_iter=2000, num_last=100):
     x_vals = []
     y_vals = []
-    
+
     # 初期条件を前のパラメータの最終状態から継続
     x, y = 0.1, 0.1  # より安定した初期条件
 
